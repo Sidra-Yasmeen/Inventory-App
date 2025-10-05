@@ -100,48 +100,176 @@ function Navbar({ onLogout, user, notifications }) {
     </nav>
   );
 }
-
-// Enhanced Sidebar
 function Sidebar({ onNav, activeView }) {
+  const [collapsed, setCollapsed] = useState(false);
+  const [showSubmenu, setShowSubmenu] = useState(null);
+  
   const menuItems = [
-    { id: 'dashboard', icon: <FaHome />, label: 'Dashboard' },
-    { id: 'products', icon: <FaBox />, label: 'Products' },
-    { id: 'purchases', icon: <FaShoppingCart />, label: 'Purchases' },
-    { id: 'sales', icon: <FaFileInvoice />, label: 'Sales' },
-    { id: 'reports', icon: <FaChartLine />, label: 'Reports' }
+    { 
+      id: 'dashboard', 
+      icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M0 1.5A1.5 1.5 0 0 1 1.5 0h13A1.5 1.5 0 0 1 16 1.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 14.5v-13zM1.5 1a.5.5 0 0 0-.5.5v13a.5.5 0 0 0 .5.5H13a.5.5 0 0 0 .5-.5V6H9.5A1.5 1.5 0 0 1 8 4.5V1H1.5zm10 3.5V1l4 4h-4z"/>
+      </svg>, 
+      label: 'Dashboard' 
+    },
+    { 
+      id: 'products', 
+      icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8 1a2 2 0 0 0-2 2v4.5a.5.5 0 0 1-1 0V3a3 3 0 0 1 6 0v4.5a.5.5 0 0 1-1 0V3a2 2 0 0 0-2-2z"/>
+        <path d="M3 7.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-5z"/>
+        <path d="M4 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm5 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+      </svg>, 
+      label: 'Products',
+      submenu: [
+        { id: 'all-products', label: 'All Products' },
+        { id: 'categories', label: 'Categories' },
+        { id: 'suppliers', label: 'Suppliers' }
+      ]
+    },
+    { 
+      id: 'purchases', 
+      icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M0 2.5A.5.5 0 0 1 .5 2h15a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1-.5-.5v-11zm1 .5v10h14V3H1zm7 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+      </svg>, 
+      label: 'Purchases' 
+    },
+    { 
+      id: 'sales', 
+      icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M0 2.5A.5.5 0 0 1 .5 2h15a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1-.5-.5v-11zm3.293 1.293a1 1 0 0 1 1.414 0l3 3a1 1 0 0 1 0 1.414l-3 3a1 1 0 1 1-1.414-1.414L4.586 7.5 3.293 6.207a1 1 0 0 1 0-1.414zM10 8a1 1 0 1 0 0 2h3a1 1 0 1 0 0-2h-3z"/>
+      </svg>, 
+      label: 'Sales' 
+    },
+    { 
+      id: 'reports', 
+      icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M0 0h1v16H0V0zm1 15h15v1H1v-1z"/>
+        <path fillRule="evenodd" d="M14.39 4.312L10.041 9.75 7 6.707l-3.646 3.647-.708-.708L7 5.293 9.959 8.25l3.65-4.563.781.624z"/>
+        <path fillRule="evenodd" d="M10 3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 1 1 0v1a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 0 12.5v-9A1.5 1.5 0 0 1 1.5 2h9a1.5 1.5 0 0 1 1.5 1.5v1a.5.5 0 0 1-1 0v-1z"/>
+      </svg>, 
+      label: 'Reports',
+      submenu: [
+        { id: 'inventory', label: 'Inventory Reports' },
+        { id: 'sales-reports', label: 'Sales Reports' },
+        { id: 'purchase-reports', label: 'Purchase Reports' }
+      ]
+    },
+    { 
+      id: 'settings', 
+      icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+        <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+      </svg>, 
+      label: 'Settings' 
+    }
   ];
 
+  const toggleSubmenu = (id) => {
+    if (showSubmenu === id) {
+      setShowSubmenu(null);
+    } else {
+      setShowSubmenu(id);
+    }
+  };
+
   return (
-    <div className="sidebar bg-dark text-light d-flex flex-column" style={{ minHeight: 'calc(100vh - 56px)', backgroundColor: colors.sidebar }}>
-      <div className="p-3">
-        <h6 className="text-uppercase fw-bold">Navigation</h6>
+    <div className={`sidebar ${collapsed ? 'collapsed' : ''}`} style={{ backgroundColor: colors.sidebar }}>
+      <div className="sidebar-header d-flex align-items-center justify-content-between p-3 border-bottom border-secondary">
+        <div className="logo d-flex align-items-center">
+          <div className="logo-icon me-2 bg-primary rounded-circle d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="white" viewBox="0 0 16 16">
+              <path d="M8 1a2 2 0 0 0-2 2v4.5a.5.5 0 0 1-1 0V3a3 3 0 0 1 6 0v4.5a.5.5 0 0 1-1 0V3a2 2 0 0 0-2-2z"/>
+              <path d="M3 7.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-5z"/>
+              <path d="M4 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm5 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+            </svg>
+          </div>
+          {!collapsed && <span className="fw-bold">InventoryApp</span>}
+        </div>
+        <button 
+          className="btn btn-sm text-white" 
+          onClick={() => setCollapsed(!collapsed)}
+          style={{ opacity: 0.7 }}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fillRule="evenodd" d="M3.646 9.146a.5.5 0 0 1 .708 0L8 12.793l3.646-3.647a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 0-.708zM8 2.5a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-1 0V3a.5.5 0 0 1 .5-.5z"/>
+          </svg>
+        </button>
       </div>
-      <div className="flex-grow-1">
-        {menuItems.map(item => (
-          <button
-            key={item.id}
-            className={`list-group-item list-group-item-action d-flex align-items-center ${activeView === item.id ? 'active' : ''}`}
-            onClick={() => onNav(item.id)}
-            style={{
-              backgroundColor: activeView === item.id ? colors.primary : 'transparent',
-              border: 'none',
-              color: colors.light,
-              transition: 'all 0.3s ease'
-            }}
-          >
-            <span className="me-2">{item.icon}</span> {item.label}
-          </button>
-        ))}
-      </div>
-      <div className="p-3 mt-auto">
-        <div className="text-center small text-muted">
-          InventoryApp v1.0
+      
+      <div className="sidebar-body">
+        {!collapsed && (
+          <div className="user-profile p-3 border-bottom border-secondary">
+            <div className="d-flex align-items-center">
+              <div className="user-avatar bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style={{ width: '40px', height: '40px' }}>
+                <span className="text-white fw-bold">A</span>
+              </div>
+              <div>
+                <div className="fw-bold">Admin User</div>
+                <div className="small text-muted">admin@example.com</div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div className="sidebar-menu p-2">
+          {menuItems.map(item => (
+            <div key={item.id}>
+              <button
+                className={`sidebar-item w-100 d-flex align-items-center p-2 rounded ${activeView === item.id ? 'active' : ''}`}
+                onClick={() => {
+                  if (item.submenu) {
+                    toggleSubmenu(item.id);
+                  } else {
+                    onNav(item.id);
+                  }
+                }}
+              >
+                <span className="sidebar-icon me-2">{item.icon}</span>
+                {!collapsed && (
+                  <>
+                    <span className="flex-grow-1 text-start">{item.label}</span>
+                    {item.submenu && (
+                      <span className="submenu-arrow">
+                        {showSubmenu === item.id ? 
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                            <path fillRule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
+                          </svg> : 
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                            <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                          </svg>
+                        }
+                      </span>
+                    )}
+                  </>
+                )}
+              </button>
+              
+              {!collapsed && item.submenu && showSubmenu === item.id && (
+                <div className="submenu ps-4 mt-1 mb-2">
+                  {item.submenu.map(subItem => (
+                    <button
+                      key={subItem.id}
+                      className="sidebar-subitem w-100 d-flex align-items-center p-2 rounded text-start"
+                      onClick={() => onNav(subItem.id)}
+                    >
+                      <span className="sidebar-icon me-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                          <path fillRule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"/>
+                        </svg>
+                      </span>
+                      <span>{subItem.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
-    </div>
+    
+      </div>
   );
 }
-
 // Enhanced Login Component
 function Login({ onLogin }) {
   const [email, setEmail] = useState('admin@example.com');
