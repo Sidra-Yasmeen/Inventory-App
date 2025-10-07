@@ -3,32 +3,59 @@ const router = express.Router();
 const db = require('../db');
 const auth = require('../middleware/auth');
 
-// Total stock value and simple monthly sales total report
+// Dashboard summary report (enhanced)
 router.get('/summary', auth, async (req, res) => {
   try {
-    // Total stock value
-    const [[{ total_value }]] = await db.query(
-      'SELECT SUM(price * quantity) as total_value FROM products'
-    );
+    // 1️⃣ Total stock value
+    const [[{ total_value }]] = await db.query(`
+      SELECT IFNULL(SUM(price * quantity), 0) AS total_value FROM products
+    `);
 
-    // Monthly sales summary (last 12 months)
-    const [sales] = await db.query(`
-      SELECT DATE_FORMAT(date, '%Y-%m') as month, SUM(total_price) as monthly_sales
+    // 2️⃣ Total products
+    const [[{ total_products }]] = await db.query(`
+      SELECT COUNT(*) AS total_products FROM products
+    `);
+
+    // 3️⃣ Low-stock products list
+    const [low_stock_products] = await db.query(`
+      SELECT id, name, category, quantity, min_stock 
+      FROM products 
+      WHERE quantity <= min_stock
+      ORDER BY quantity ASC
+      LIMIT 10
+    `);
+
+    // 4️⃣ Recent sales (last 7 days)
+    const [[{ recent_sales }]] = await db.query(`
+      SELECT IFNULL(SUM(total_price), 0) AS recent_sales
+      FROM sales
+      WHERE date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+    `);
+
+    // 5️⃣ Monthly sales data for chart (last 12 months)
+    const [monthly_sales] = await db.query(`
+      SELECT 
+        DATE_FORMAT(date, '%b %Y') AS month,
+        SUM(total_price) AS amount,
+        SUM(qty) AS units
       FROM sales
       GROUP BY DATE_FORMAT(date, '%Y-%m')
-      ORDER BY month DESC
+      ORDER BY MIN(date) ASC
       LIMIT 12
     `);
 
     res.json({
       total_value: total_value || 0,
-      monthly_sales: sales
+      total_products: total_products || 0,
+      low_stock_products: low_stock_products || [],
+      recent_sales: recent_sales || 0,
+      monthly_sales: monthly_sales || []
     });
+
   } catch (err) {
-    console.error(err);
+    console.error('Error fetching report summary:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
 module.exports = router;
- 

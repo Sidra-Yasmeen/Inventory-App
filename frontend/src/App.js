@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import API from './api';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { FaBox, FaShoppingCart, FaChartLine, FaFileInvoice, FaSignOutAlt, FaSearch, FaPlus, FaEdit, FaTrash, FaDownload, FaBell, FaUser, FaCog, FaHome } from 'react-icons/fa';
+import { FaBox, FaShoppingCart, FaChartLine, FaFileInvoice, FaSignOutAlt, FaSearch, FaPlus, FaEdit, FaTrash, FaDownload, FaUser, FaCog, FaHome } from 'react-icons/fa';
 
 // Professional color scheme
 const colors = {
@@ -17,23 +17,6 @@ const colors = {
   sidebar: '#34495e'       // Sidebar color
 };
 
-// Notification Component
-const Notification = ({ message, type, onClose }) => {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      onClose();
-    }, 5000);
-    return () => clearTimeout(timer);
-  }, [onClose]);
-
-  return (
-    <div className={`notification alert alert-${type} alert-dismissible fade show`} role="alert">
-      {message}
-      <button type="button" className="btn-close" onClick={onClose}></button>
-    </div>
-  );
-};
-
 // Loading Spinner
 const LoadingSpinner = () => (
   <div className="d-flex justify-content-center my-5">
@@ -43,10 +26,22 @@ const LoadingSpinner = () => (
   </div>
 );
 
+// Error Component
+const ErrorComponent = ({ message, onRetry }) => (
+  <div className="alert alert-danger d-flex align-items-center">
+    <div>
+      <strong>Error:</strong> {message}
+    </div>
+    {onRetry && (
+      <button className="btn btn-outline-danger btn-sm ms-auto" onClick={onRetry}>
+        Retry
+      </button>
+    )}
+  </div>
+);
+
 // Enhanced Navbar
-function Navbar({ onLogout, user, notifications }) {
-  const [showNotifications, setShowNotifications] = useState(false);
-  
+function Navbar({ onLogout, user }) {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark shadow-sm" style={{ backgroundColor: colors.primary }}>
       <div className="container-fluid">
@@ -54,35 +49,6 @@ function Navbar({ onLogout, user, notifications }) {
           <FaBox className="me-2" /> InventoryApp
         </a>
         <div className="d-flex align-items-center">
-          <div className="position-relative me-3">
-            <button 
-              className="btn btn-sm position-relative p-1" 
-              style={{ color: colors.light }}
-              onClick={() => setShowNotifications(!showNotifications)}
-            >
-              <FaBell size={20} />
-              {notifications.length > 0 && (
-                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                  {notifications.length}
-                </span>
-              )}
-            </button>
-            {showNotifications && (
-              <div className="position-absolute end-0 mt-2 p-3 bg-white text-dark rounded shadow" style={{ width: '300px', zIndex: 1000 }}>
-                <h6>Notifications</h6>
-                {notifications.length > 0 ? (
-                  notifications.map((note, index) => (
-                    <div key={index} className="mb-2 p-2 border-bottom">
-                      <div className="fw-bold">{note.title}</div>
-                      <div className="small">{note.message}</div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-muted small">No new notifications</p>
-                )}
-              </div>
-            )}
-          </div>
           {user ? (
             <div className="dropdown">
               <button className="btn btn-sm dropdown-toggle d-flex align-items-center" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" style={{ color: colors.light }}>
@@ -100,6 +66,7 @@ function Navbar({ onLogout, user, notifications }) {
     </nav>
   );
 }
+
 function Sidebar({ onNav, activeView }) {
   const [collapsed, setCollapsed] = useState(false);
   const [showSubmenu, setShowSubmenu] = useState(null);
@@ -119,12 +86,7 @@ function Sidebar({ onNav, activeView }) {
         <path d="M3 7.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-5z"/>
         <path d="M4 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm5 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
       </svg>, 
-      label: 'Products',
-      submenu: [
-        { id: 'all-products', label: 'All Products' },
-        { id: 'categories', label: 'Categories' },
-        { id: 'suppliers', label: 'Suppliers' }
-      ]
+      label: 'Products'
     },
     { 
       id: 'purchases', 
@@ -147,18 +109,13 @@ function Sidebar({ onNav, activeView }) {
         <path fillRule="evenodd" d="M14.39 4.312L10.041 9.75 7 6.707l-3.646 3.647-.708-.708L7 5.293 9.959 8.25l3.65-4.563.781.624z"/>
         <path fillRule="evenodd" d="M10 3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 1 1 0v1a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 0 12.5v-9A1.5 1.5 0 0 1 1.5 2h9a1.5 1.5 0 0 1 1.5 1.5v1a.5.5 0 0 1-1 0v-1z"/>
       </svg>, 
-      label: 'Reports',
-      submenu: [
-        { id: 'inventory', label: 'Inventory Reports' },
-        { id: 'sales-reports', label: 'Sales Reports' },
-        { id: 'purchase-reports', label: 'Purchase Reports' }
-      ]
+      label: 'Reports'
     },
     { 
       id: 'settings', 
       icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
         <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
-        <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+        <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
       </svg>, 
       label: 'Settings' 
     }
@@ -197,20 +154,6 @@ function Sidebar({ onNav, activeView }) {
       </div>
       
       <div className="sidebar-body">
-        {!collapsed && (
-          <div className="user-profile p-3 border-bottom border-secondary">
-            <div className="d-flex align-items-center">
-              <div className="user-avatar bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style={{ width: '40px', height: '40px' }}>
-                <span className="text-white fw-bold">A</span>
-              </div>
-              <div>
-                <div className="fw-bold">Admin User</div>
-                <div className="small text-muted">admin@example.com</div>
-              </div>
-            </div>
-          </div>
-        )}
-        
         <div className="sidebar-menu p-2">
           {menuItems.map(item => (
             <div key={item.id}>
@@ -266,14 +209,14 @@ function Sidebar({ onNav, activeView }) {
           ))}
         </div>
       </div>
-    
-      </div>
+    </div>
   );
 }
+
 // Enhanced Login Component
 function Login({ onLogin }) {
   const [email, setEmail] = useState('admin@example.com');
-  const [password, setPassword] = useState('password');
+  const [password, setPassword] = useState('123456');
   const [err, setErr] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
@@ -367,8 +310,8 @@ function Login({ onLogin }) {
 export default function App() {
   const [user, setUser] = useState(null);
   const [view, setView] = useState('dashboard');
-  const [notifications, setNotifications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [authError, setAuthError] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -382,6 +325,8 @@ export default function App() {
       setUser({ name: payload.email, role: payload.role });
     } catch(e) {
       console.error(e);
+      setAuthError('Invalid authentication token');
+      localStorage.removeItem('token');
     } finally {
       setIsLoading(false);
     }
@@ -390,20 +335,6 @@ export default function App() {
   const handleLogout = () => { 
     localStorage.removeItem('token'); 
     setUser(null); 
-  };
-  
-  const addNotification = (message, type = 'info') => {
-    const newNotification = {
-      id: Date.now(),
-      title: type.charAt(0).toUpperCase() + type.slice(1),
-      message,
-      type
-    };
-    setNotifications(prev => [...prev, newNotification]);
-  };
-  
-  const removeNotification = (id) => {
-    setNotifications(prev => prev.filter(note => note.id !== id));
   };
 
   if (isLoading) {
@@ -414,36 +345,47 @@ export default function App() {
     );
   }
   
+  if (authError) {
+    return (
+      <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ backgroundColor: colors.background }}>
+        <div className="col-md-5">
+          <div className="card shadow-lg border-0">
+            <div className="card-body p-5">
+              <div className="text-center mb-4">
+                <h3 className="text-danger">Authentication Error</h3>
+                <p>{authError}</p>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={() => window.location.href = '/'}
+                  style={{ backgroundColor: colors.primary }}
+                >
+                  Go to Login
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   if (!localStorage.getItem('token') || !user) {
     return <Login onLogin={(u) => setUser(u)} />;
   }
 
   return (
     <div className="d-flex flex-column min-vh-100" style={{ backgroundColor: colors.background }}>
-      <Navbar 
-        onLogout={handleLogout} 
-        user={user} 
-        notifications={notifications}
-      />
+      <Navbar onLogout={handleLogout} user={user} />
       
       <div className="d-flex flex-grow-1">
         <Sidebar onNav={setView} activeView={view} />
         
         <div className="flex-grow-1 p-4 overflow-auto">
-          {notifications.map(note => (
-            <Notification 
-              key={note.id} 
-              message={note.message} 
-              type={note.type} 
-              onClose={() => removeNotification(note.id)} 
-            />
-          ))}
-          
-          {view === 'dashboard' && <Dashboard addNotification={addNotification} />}
-          {view === 'products' && <Products addNotification={addNotification} />}
-          {view === 'purchases' && <Purchases addNotification={addNotification} />}
-          {view === 'sales' && <Sales addNotification={addNotification} />}
-          {view === 'reports' && <Reports addNotification={addNotification} />}
+          {view === 'dashboard' && <Dashboard />}
+          {view === 'products' && <Products />}
+          {view === 'purchases' && <Purchases />}
+          {view === 'sales' && <Sales />}
+          {view === 'reports' && <Reports />}
         </div>
       </div>
     </div>
@@ -451,32 +393,27 @@ export default function App() {
 }
 
 // Enhanced Dashboard
-function Dashboard({ addNotification }) {
+function Dashboard() {
   const [summary, setSummary] = useState({ total_value: 0, monthly_sales: [], low_stock_products: [] });
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await API.get('/reports/summary');
         setSummary(res.data);
-        
-        // Check for low stock notifications
-        if (res.data.low_stock_products && res.data.low_stock_products.length > 0) {
-          addNotification(
-            `${res.data.low_stock_products.length} products are low in stock!`,
-            'warning'
-          );
-        }
+        setError(null);
       } catch (err) {
-        addNotification('Failed to load dashboard data', 'danger');
+        console.error('Failed to load dashboard data', err);
+        setError('Failed to load dashboard data. Please try again.');
       } finally {
         setIsLoading(false);
       }
     };
     
     fetchData();
-  }, [addNotification]);
+  }, []);
 
   // Simple bar chart component
   const BarChart = ({ data }) => {
@@ -509,8 +446,9 @@ function Dashboard({ addNotification }) {
     <div>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="fw-bold">Dashboard</h2>
-        <div className="text-muted">Last updated: {new Date().toLocaleTimeString()}</div>
       </div>
+      
+      {error && <ErrorComponent message={error} />}
       
       <div className="row g-4 mb-4">
         <div className="col-md-3">
@@ -621,20 +559,23 @@ function Dashboard({ addNotification }) {
 }
 
 // Enhanced Products Component
-function Products({ addNotification }) {
+function Products() {
   const [products, setProducts] = useState([]);
   const [q, setQ] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [error, setError] = useState(null);
 
   const fetch = async () => {
     setIsLoading(true);
     try {
       const res = await API.get('/products', { params: { q } });
       setProducts(res.data);
+      setError(null);
     } catch (err) {
-      addNotification('Failed to load products', 'danger');
+      console.error('Failed to load products', err);
+      setError('Failed to load products. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -648,10 +589,10 @@ function Products({ addNotification }) {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
         await API.delete('/products/' + id);
-        addNotification('Product deleted successfully', 'success');
         fetch();
       } catch (err) {
-        addNotification('Failed to delete product', 'danger');
+        console.error('Failed to delete product', err);
+        setError('Failed to delete product. Please try again.');
       }
     }
   };
@@ -665,7 +606,6 @@ function Products({ addNotification }) {
     fetch();
     setShowAddForm(false);
     setEditingProduct(null);
-    addNotification('Product saved successfully', 'success');
   };
 
   return (
@@ -680,6 +620,8 @@ function Products({ addNotification }) {
           <FaPlus className="me-2" /> {showAddForm ? 'Cancel' : 'Add Product'}
         </button>
       </div>
+      
+      {error && <ErrorComponent message={error} onRetry={fetch} />}
       
       {showAddForm && (
         <ProductForm 
@@ -793,6 +735,7 @@ function ProductForm({ onSaved, product, onCancel }) {
     min_stock: 5
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (product) {
@@ -810,8 +753,10 @@ function ProductForm({ onSaved, product, onCancel }) {
         await API.post('/products', form);
       }
       onSaved();
+      setError(null);
     } catch (err) {
       console.error(err);
+      setError('Failed to save product. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -821,6 +766,9 @@ function ProductForm({ onSaved, product, onCancel }) {
     <div className="card border-0 shadow-sm mb-4">
       <div className="card-body">
         <h5 className="card-title mb-4">{product ? 'Edit Product' : 'Add New Product'}</h5>
+        
+        {error && <ErrorComponent message={error} />}
+        
         <form onSubmit={submit}>
           <div className="row g-3">
             <div className="col-md-6">
@@ -930,19 +878,22 @@ function ProductForm({ onSaved, product, onCancel }) {
 }
 
 // Enhanced Purchases Component
-function Purchases({ addNotification }) {
+function Purchases() {
   const [products, setProducts] = useState([]);
   const [form, setForm] = useState({ product_id: '', qty: 1, total_cost: 0, supplier: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
+  const [error, setError] = useState(null);
 
   const fetch = async () => {
     setIsFetching(true);
     try {
       const res = await API.get('/products');
       setProducts(res.data);
+      setError(null);
     } catch (err) {
-      addNotification('Failed to load products', 'danger');
+      console.error('Failed to load products', err);
+      setError('Failed to load products. Please try again.');
     } finally {
       setIsFetching(false);
     }
@@ -957,11 +908,12 @@ function Purchases({ addNotification }) {
     setIsLoading(true);
     try {
       await API.post('/purchases', form);
-      addNotification('Purchase recorded successfully', 'success');
       setForm({ product_id: '', qty: 1, total_cost: 0, supplier: '' });
       fetch();
+      setError(null);
     } catch (err) {
-      addNotification('Failed to record purchase', 'danger');
+      console.error('Failed to record purchase', err);
+      setError('Failed to record purchase. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -970,6 +922,8 @@ function Purchases({ addNotification }) {
   return (
     <div>
       <h2 className="fw-bold mb-4">Record Purchase</h2>
+      
+      {error && <ErrorComponent message={error} onRetry={fetch} />}
       
       <div className="card border-0 shadow-sm">
         <div className="card-body">
@@ -1058,19 +1012,22 @@ function Purchases({ addNotification }) {
 }
 
 // Enhanced Sales Component
-function Sales({ addNotification }) {
+function Sales() {
   const [products, setProducts] = useState([]);
   const [form, setForm] = useState({ product_id: '', qty: 1, total_price: 0, customer: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
+  const [error, setError] = useState(null);
 
   const fetch = async () => {
     setIsFetching(true);
     try {
       const res = await API.get('/products');
       setProducts(res.data);
+      setError(null);
     } catch (err) {
-      addNotification('Failed to load products', 'danger');
+      console.error('Failed to load products', err);
+      setError('Failed to load products. Please try again.');
     } finally {
       setIsFetching(false);
     }
@@ -1085,11 +1042,12 @@ function Sales({ addNotification }) {
     setIsLoading(true);
     try {
       await API.post('/sales', form);
-      addNotification('Sale recorded successfully', 'success');
       setForm({ product_id: '', qty: 1, total_price: 0, customer: '' });
       fetch();
+      setError(null);
     } catch (err) {
-      addNotification(err?.response?.data?.error || 'Failed to record sale', 'danger');
+      console.error('Failed to record sale', err);
+      setError('Failed to record sale. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -1098,6 +1056,8 @@ function Sales({ addNotification }) {
   return (
     <div>
       <h2 className="fw-bold mb-4">Record Sale</h2>
+      
+      {error && <ErrorComponent message={error} onRetry={fetch} />}
       
       <div className="card border-0 shadow-sm">
         <div className="card-body">
@@ -1186,30 +1146,35 @@ function Sales({ addNotification }) {
 }
 
 // Enhanced Reports Component
-function Reports({ addNotification }) {
+function Reports() {
   const [data, setData] = useState({ total_value: 0, monthly_sales: [], top_products: [], sales_by_category: [] });
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await API.get('/reports/summary');
         setData(res.data);
+        setError(null);
       } catch (err) {
-        addNotification('Failed to load reports', 'danger');
+        console.error('Failed to load reports', err);
+        setError('Failed to load reports. Please try again.');
       } finally {
         setIsLoading(false);
       }
     };
     
     fetchData();
-  }, [addNotification]);
+  }, []);
 
   if (isLoading) return <LoadingSpinner />;
   
   return (
     <div>
       <h2 className="fw-bold mb-4">Inventory Reports</h2>
+      
+      {error && <ErrorComponent message={error} />}
       
       <div className="row g-4 mb-4">
         <div className="col-md-6">
